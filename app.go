@@ -7,9 +7,21 @@ import (
 	"time"
 )
 
-// Perm calls f with each permutation of a.
-func Perm(a []int, f func([]int)) {
-	perm(a, f, 0)
+func int_to_array(n int) []int {
+	var arr []int
+
+	n = int(math.Abs(float64(n)))
+
+	for n > 0 {
+		// get the last digit
+		d := n % 10
+		// append it to the array
+		arr = append([]int{d}, arr...)
+		// divide by 10
+		n = n / 10
+	}
+
+	return arr
 }
 
 // Permute the values at index i to len(a)-1.
@@ -26,51 +38,28 @@ func perm(a []int, f func([]int), i int) {
 	}
 }
 
+// Get all permutations of a number
 func get_permutations_from_number(n int) [][]int {
-	var arr []int
-
-	for n > 0 {
-		// get the last digit
-		d := n % 10
-		// append it to the array
-		arr = append(arr, d)
-		// divide by 10
-		n = n / 10
-	}
-
 	var result [][]int
 
-	Perm(arr, func(a []int) {
+	arr := int_to_array(n)
+
+	perm(arr, func(a []int) {
 		b := make([]int, len(a))
 		copy(b, a)
 
 		result = append(result, b)
 
-	})
+	}, 0)
 
 	return result
 }
 
-func splice_number(n int) []int {
-	var arr []int
+func contains(arr [][]int, item int) bool {
+	item_arr := int_to_array(item)
 
-	n = int(math.Abs(float64(n)))
-
-	for n > 0 {
-		// get the last digit
-		d := n % 10
-		// prepend it to the array
-		arr = append([]int{d}, arr...)
-		// divide by 10
-		n = n / 10
-	}
-
-	return arr
-}
-
-func contains(arr [][]int, item []int) bool {
 	for _, a := range arr {
-		if slices.Equal(a, item) {
+		if slices.Equal(a, item_arr) {
 			return true
 		}
 	}
@@ -78,19 +67,15 @@ func contains(arr [][]int, item []int) bool {
 	return false
 }
 
-func analyze_number(i int) {
-	perms := get_permutations_from_number(i)
+func analyze_number(money_in_the_pocket int) {
+	perms := get_permutations_from_number(money_in_the_pocket)
 
 	for _, perm := range perms {
-		subtractor := perm[0]*100 + perm[1]*10 + perm[2]
-		subtracted := i - subtractor
+		sushi := perm[0]*100 + perm[1]*10 + perm[2]
+		change := money_in_the_pocket - sushi
 
-		spliced := splice_number(subtracted)
-
-		// fmt.Println(i, subtractor, subtracted, " ", spliced)
-
-		if contains(perms, spliced) {
-			fmt.Println("Found a match: ", i, subtractor, subtracted)
+		if contains(perms, change) {
+			fmt.Println("Found a match: ", money_in_the_pocket, sushi, change)
 		}
 	}
 }

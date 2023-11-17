@@ -7,21 +7,35 @@ import (
 	"time"
 )
 
-func int_to_array(n int) []int {
-	var arr []int
+type number struct {
+	digits []int
+}
 
-	n = int(math.Abs(float64(n)))
+func (num *number) make(param int) {
+	n := int(math.Abs(float64(param)))
 
 	for n > 0 {
 		// get the last digit
 		d := n % 10
 		// append it to the array
-		arr = append([]int{d}, arr...)
+		num.digits = append([]int{d}, num.digits...)
 		// divide by 10
 		n = n / 10
 	}
+}
 
-	return arr
+func (num *number) swap(i, j int) {
+	num.digits[i], num.digits[j] = num.digits[j], num.digits[i]
+}
+
+// Check if a number is in an array
+func (num number) in(array []number) bool {
+	for _, elem := range array {
+		if slices.Equal(elem.digits, num.digits) {
+			return true
+		}
+	}
+	return false
 }
 
 // Permute the values at index i to len(a)-1.
@@ -42,9 +56,10 @@ func perm(a []int, f func([]int), i int) {
 func get_permutations_from_number(n int) [][]int {
 	var result [][]int
 
-	arr := int_to_array(n)
+	num := new(number)
+	num.make(n)
 
-	perm(arr, func(a []int) {
+	perm(num.digits, func(a []int) {
 		b := make([]int, len(a))
 		copy(b, a)
 
@@ -56,10 +71,11 @@ func get_permutations_from_number(n int) [][]int {
 }
 
 func contains(arr [][]int, item int) bool {
-	item_arr := int_to_array(item)
+	num := new(number)
+	num.make(item)
 
 	for _, a := range arr {
-		if slices.Equal(a, item_arr) {
+		if slices.Equal(a, num.digits) {
 			return true
 		}
 	}
@@ -82,7 +98,7 @@ func analyze_number(money_in_the_pocket int) {
 
 func main() {
 	start := time.Now()
-	for i := 100; i < 999; i++ {
+	for i := 954; i < 955; i++ {
 		analyze_number(i)
 	}
 	fmt.Println("Time elapsed: ", time.Since(start))

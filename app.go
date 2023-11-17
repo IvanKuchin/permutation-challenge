@@ -7,46 +7,64 @@ import (
 	"time"
 )
 
-func int_to_array(n int) []int {
-	var arr []int
+type number struct {
+	digits []int
+}
 
-	n = int(math.Abs(float64(n)))
+func make_number(param int) number {
+	var num number
+	num.digits = nil
+	n := int(math.Abs(float64(param)))
 
 	for n > 0 {
 		// get the last digit
 		d := n % 10
 		// append it to the array
-		arr = append([]int{d}, arr...)
+		num.digits = append([]int{d}, num.digits...)
 		// divide by 10
 		n = n / 10
 	}
 
-	return arr
+	return num
+}
+
+func (num *number) swap(i, j int) {
+	num.digits[i], num.digits[j] = num.digits[j], num.digits[i]
+}
+
+// Check if a number is in an array
+func (num number) in(array []number) bool {
+	for _, elem := range array {
+		if slices.Equal(elem.digits, num.digits) {
+			return true
+		}
+	}
+	return false
 }
 
 // Permute the values at index i to len(a)-1.
-func perm(a []int, f func([]int), i int) {
-	if i > len(a) {
+func perm(a number, f func(number), i int) {
+	if i > len(a.digits) {
 		f(a)
 		return
 	}
 	perm(a, f, i+1)
-	for j := i + 1; j < len(a); j++ {
-		a[i], a[j] = a[j], a[i]
+	for j := i + 1; j < len(a.digits); j++ {
+		a.swap(i, j)
 		perm(a, f, i+1)
-		a[i], a[j] = a[j], a[i]
+		a.swap(i, j)
 	}
 }
 
 // Get all permutations of a number
-func get_permutations_from_number(n int) [][]int {
-	var result [][]int
+func get_permutations_from_number(n int) []number {
+	var result []number
+	num := make_number(n)
 
-	arr := int_to_array(n)
-
-	perm(arr, func(a []int) {
-		b := make([]int, len(a))
-		copy(b, a)
+	perm(num, func(a number) {
+		b := a
+		b.digits = nil
+		b.digits = append(b.digits, a.digits...)
 
 		result = append(result, b)
 
@@ -55,34 +73,22 @@ func get_permutations_from_number(n int) [][]int {
 	return result
 }
 
-func contains(arr [][]int, item int) bool {
-	item_arr := int_to_array(item)
-
-	for _, a := range arr {
-		if slices.Equal(a, item_arr) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func analyze_number(money_in_the_pocket int) {
 	perms := get_permutations_from_number(money_in_the_pocket)
 
 	for _, perm := range perms {
-		sushi := perm[0]*100 + perm[1]*10 + perm[2]
-		change := money_in_the_pocket - sushi
+		sushi := perm.digits[0]*100 + perm.digits[1]*10 + perm.digits[2]
+		change := make_number(money_in_the_pocket - sushi)
 
-		if contains(perms, change) {
-			fmt.Println("Found a match: ", money_in_the_pocket, sushi, change)
+		if change.in(perms) {
+			fmt.Println("Found a match: ", money_in_the_pocket, sushi, money_in_the_pocket-sushi)
 		}
 	}
 }
 
 func main() {
 	start := time.Now()
-	for i := 100; i < 999; i++ {
+	for i := 100; i < 1000; i++ {
 		analyze_number(i)
 	}
 	fmt.Println("Time elapsed: ", time.Since(start))
